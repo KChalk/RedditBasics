@@ -27,7 +27,7 @@ def main():
 
     # filter
     print('\n\n\n starting read and filter')
-    filtered = filterPosts(file)
+    filtered = filterPosts(file,sc,spark,subs=set(['depression','Anxiety']))
 
     print('\n\n\n Saving')
     ## Save posts
@@ -46,16 +46,15 @@ def tokenize(s):
             tokens.append(word)
     return tokens
 
-def filterPosts(filename, sc=sc, ss=spark, subs=set(), minwords='100', columns=['id','subreddit']):
-    tokensUDF = udf(tokenize, ArrayType(StringType())) 
+def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
+    tokensUDF = udf(tokenize, ArrayType(StringType()))
     alldata = ss.read.json(filename)
-    columns=columns.append(tokensUDF('selftext').alias("tokens"))
     if subs!=set():
-        alldata=alldata.filter(alldata['subreddit'] in subs)
+        alldata=alldata.filter(alldata.subreddit.isin(subs))
 
     filtered= alldata \
         .filter(alldata['is_self'] == True) 	\
-        .select(*columns)	\
+        .select('id','subreddit',tokensUDF('selftext').alias('tokens'))	\
         .withColumn('wordcount', size('tokens'))	\
         .filter('wordcount >='+minwords)
     return filtered
