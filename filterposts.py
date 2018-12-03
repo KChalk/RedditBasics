@@ -1,4 +1,3 @@
-# large parquet
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import size, split
@@ -11,6 +10,8 @@ import csv
 import re 
 from string import punctuation
 
+from pyspark.ml.feature import CountVectorizer
+import codecs
    
 def main():
     spark = SparkSession \
@@ -20,19 +21,24 @@ def main():
         .getOrCreate()
         
     #file = "RS_full_corpus.bz2"
-    file="file:////l2/corpora/reddit/submissions/RS_2013-01.bz2"
-    output='filtered'+file[-14:-4]
+    file="file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"
+    output='filtered_'+file[-14:-4]
 
     sc = spark.sparkContext
+    sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
 
     # filter
     print('\n\n\n starting read and filter')
-    filtered = filterPosts(file,sc,spark,subs=set(['depression','Anxiety']))
+    filtered = filterPosts(file,sc,spark,subs=set(sub_list))
+
+    print('\n\n\n Vectorizing')
+
+    vectors=convertToVec(filtered,sc,spark,output)
 
     print('\n\n\n Saving')
     ## Save posts
-    filtered.write.parquet(output+'.parquet', mode='overwrite')
-    #filtered.write.json(output+'.json', mode='overwrite')
+    #filtered.write.parquet(output+'.parquet', mode='overwrite')
+    vectors.write.json(output+'.json', mode='overwrite')
     #withvectors.write.json(output+'.json', mode='overwrite')
 
 def tokenize(s):
@@ -58,6 +64,18 @@ def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
         .withColumn('wordcount', size('tokens'))	\
         .filter('wordcount >='+minwords)
     return filtered
+
+def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
+    cv=CountVectorizer(inputCol=inputCol, outputCol='vectors',minTF=1.0)
+    vecModel=cv.fit(df)
+    print('\n\n\n Get Vocab... \n\n\n')
+    inv_voc=vecModel.vocabulary 
+    f = codecs.open(outputName+'_vocab.txt', encoding='utf-8', mode='w')
+    for item in inv_voc:
+        f.write(u'{0}\n'.format(item))
+    f.close()
+    vectors= vecModel.transform(df).select('id','subreddit','vectors')
+    return vectors
 
 if __name__ == "__main__":
     main()
