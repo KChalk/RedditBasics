@@ -6,21 +6,59 @@ from nltk import word_tokenize
 from typing import List, Dict
 import numpy as np
 
+
+# add * based prefix matching. 
+
 class WordCollection: 
     obj_list: List['WordCollection'] =[] 
     num_to_obj: Dict[int, 'WordCollection'] ={}
     name_to_obj: Dict[str, 'WordCollection']={}
     vocab_to_objs: Dict[str, List['WordCollection']]=defaultdict(list)
 
-    def __init__(self, num:int, name:str, words:List[str]):
+    def __init__(self, num:int, name:str, words:List[str]): 
         self.num=num
         self.name=name
-        self.words=words
+        self.words=words 
         WordCollection.obj_list.append(self)
         WordCollection.num_to_obj[num]=self
         WordCollection.name_to_obj[name]=self
         for w in words: 
-            WordCollection.vocab_to_objs[w].append(self)
+            WordCollection.vocab_to_objs[w].append(self)# possibly use new add word method here
+    
+    def add_word(self,word):
+        WordCollection.vocab_to_objs[word].append(self)
+        self.words.append(word) # Probably not actually necessary, should probably get rid of this
+
+    @classmethod    
+    def cols_from_file(cls, filename):
+        state=0
+        with open(filename) as file:
+            for line in file: #throw in assertion that first line is a % 
+                line=line.strip()
+
+                if line=='%':
+                    state+=1 #rename boundary count
+                    continue
+
+                elif state==1: 
+                    #in list of dicionary names and codes #change to elif
+                    col_name, col_num=line.split('\t')
+                    WordCollection(col_name,col_num,[]) 
+
+                elif state==2: 
+                    #in list of words followed by list of dicts they belong to 
+                    line=line.split('\t') #change to be tuple unpacking??
+                    word=line[0]
+                    
+                    if word[-1]=='*': #remove *'s-- program will not distinguish between words and prefixes
+                        word=word[:-1]
+                    
+                    for col_num in line[1:]:
+                        obj= cls.num_to_obj[col_num]
+                        obj.add_word(word)
+                        
+        assert (state < 3), "Syntax error in input file"
+        return WordCollection
 
 def filter_posts(filename, outputname, minwords=100):
     sub_list= set(['reddit.com','leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings'])
@@ -52,44 +90,14 @@ def tokenize(s):
             tokens.append(word)
     '''
     return counter,len(tokens)
-    
-def getdicts(filename):
-    boundarycount=0
-    with open(filename) as file:
-        for line in file:
-            line=line.strip()
-            if line=='%':
-                boundarycount+=1
-                continue
-            if boundarycount==1: #in list of dicionary names and codes
-                line=line.split('\t')
-                WordCollection(line[0],line[1],[])
 
-            if boundarycount==2: #in list of words followed by list of dicts they belong to 
-                line=line.split('\t')
-                word=line[0]
-                if word[-1]=='*': #remove *'s-- program will not distinguish between words and prefixes
-                    word=word[:-1]
-                
-                for col_num in line[1:]:
-                    obj= WordCollection.num_to_obj[col_num]
-                    WordCollection.vocab_to_objs[word].append(obj)
-            if boundarycount>2: 
-                print('\n\n\n')
-                print('error in reading dicts')
-                print('\n\n\n')
-    return WordCollection
-
-def adddict(dictnum,dictname,wordlist):
-    WordCollection(dictnum,dictname,wordlist)
-    #    absolutist = set(['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole'])
 
 def getfreqs(counter): 
     counts=Counter()
-    for word, count in counter.items():
+    for word, count in counter.items(): #reduce number of 'count' variables  specifcy WCcoutn v. wordCount
         i=len(word)
         while i>0:
-            try:
+            try: #change to while prefix != '' if in vocab,,, break, prefix =prefix[:-1]
                 for d in WordCollection.vocab_to_objs[word[:i]]:
                     counts[d]+=count
                 i=0 
@@ -121,8 +129,7 @@ if __name__ == "__main__":
     outputname='filtered_'+filename[3:10]
     filtered=filter_posts(filename, outputname)
 
-    global DICTIONARIES
-    getdicts("LIWC2007_updated.dic")
+    WordCollection.cols_from_file("wordCollections.dic")
     absolutist = ['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole']
     WordCollection(0,'absolutist', absolutist)
 
