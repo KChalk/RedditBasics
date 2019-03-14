@@ -14,7 +14,7 @@ from pyspark.ml.feature import CountVectorizer
 import codecs
 
 from filterposts import filterPosts, convertToVec
-from wordCollection import WordCollection, calculatePosts
+from wordCollection import WordCollection, add_wc_freq
 
 def main():
     spark = SparkSession \
@@ -33,7 +33,9 @@ def main():
     print('\n\n\n starting read and filter')
     filtered = filterPosts(file,sc,spark,subs=set(sub_list))
 
-    WordCollection.wcs_from_file("wordCollections.dic")
+    file="file:////g/chalkley/RedditProject/sequential/wordCollections.dic"
+
+    WordCollection.wcs_from_file(file)
     absolutist = ['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole']
     WordCollection(0,'absolutist', absolutist)
     

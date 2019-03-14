@@ -1,10 +1,7 @@
-import pandas as pd
 from collections import Counter, defaultdict
 import re 
 #from string import punctuation
 from nltk import word_tokenize
-from typing import List, Dict
-import numpy as np
 
 
 # add * based prefix matching. 
@@ -93,7 +90,7 @@ def getCounts(words_counter):
     
 
 def add_wc_freq(df,sc,ss,inputCol='counter'):
-    getCountsUDF-udf(getCounts,  MapType(StringType(), IntegerType())
+    getCountsUDF-udf(getCounts,  MapType(StringType(), IntegerType()))
 
     df= df \
          .select('id','subreddit','wordcount', getCountsUDF(inputcol).alias('collection_counts'))
