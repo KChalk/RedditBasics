@@ -7,7 +7,7 @@ module load hadoop
 spark-submit \
     --master yarn \
     --num-executors 50 \
-	filterposts.py
+	main.py
 
 #spark-submit \
 #    --master yarn \
