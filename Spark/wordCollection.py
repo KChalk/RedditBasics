@@ -2,6 +2,8 @@ from collections import Counter, defaultdict
 import re 
 #from string import punctuation
 from nltk import word_tokenize
+from pyspark.sql.functions import udf, size,split
+from pyspark.sql.types import IntegerType, MapType, StringType
 
 
 # add * based prefix matching. 
@@ -15,6 +17,7 @@ class WordCollection:
     def __init__(self, num, name, words): 
         self.num=num
         self.name=name
+	self.nomen=name
         self.words=words 
         WordCollection.obj_list.append(self)
         WordCollection.num_to_obj[num]=self
@@ -85,29 +88,29 @@ def getCounts(words_counter):
         wcs=WordCollection.match_prefix_to_wcs(word)
         
         for wc in wcs:
-            wc_counts[wc.name]+=count
+            wc_counts[wc.nomen]+=count
     return wc_counts
     
 
 def add_wc_freq(df,sc,ss,inputCol='counter'):
-    getCountsUDF-udf(getCounts,  MapType(StringType(), IntegerType()))
+    getCountsUDF=udf(getCounts,  MapType(StringType(), IntegerType()))
 
-    df= df \
-         .select('id','subreddit','wordcount', getCountsUDF(inputcol).alias('collection_counts'))
+    df= df.select('id','subreddit','wordcount', getCountsUDF(inputCol).alias('collection_counts'))
 
     for d in WordCollection.obj_list: 
-        df=df.withColumn(d.name, df['collection_counts'][d])
+        df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
     agg = df.groupby(df['subreddit']) \
-        .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'ppron' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'ipron' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conj' : "sum", 'negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'incl' : "sum", 'excl' : "sum", 'percept' : "sum", 'see' : "sum", 'hear' : "sum", 'feel' : "sum", 'bio' : "sum", 'body' : "sum", 'health' : "sum", 'sexual' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"}) \
-        .filter(counts['count(1)']>=100)
+        .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions':
+'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
+    agg =agg.filter(agg['count(1)']>=100)
 
     print('\n\n\n finished group with filter \n\n\n' )
 
     for d in WordCollection.obj_list: 
-		agg=agg.withColumn(d.name+'_freq', agg['sum('+d.name+')']/tidyfreqDF['sum(wordcount)']) \
-            .drop(tidyfreqDF['sum('+dictname+')'])
+		agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
+            .drop(agg['sum('+d.nomen+')'])
 
     return agg
