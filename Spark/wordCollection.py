@@ -10,12 +10,12 @@ import numpy as np
 # add * based prefix matching. 
 
 class WordCollection: 
-    obj_list: List['WordCollection'] =[] 
-    num_to_obj: Dict[int, 'WordCollection'] ={}
-    name_to_obj: Dict[str, 'WordCollection']={}
-    vocab_to_objs: Dict[str, List['WordCollection']]=defaultdict(list)
+    obj_list=[] 
+    num_to_obj={}
+    name_to_obj={}
+    vocab_to_objs=defaultdict(list)
 
-    def __init__(self, num:int, name:str, words:List[str]): 
+    def __init__(self, num, name, words): 
         self.num=num
         self.name=name
         self.words=words 
