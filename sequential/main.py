@@ -30,14 +30,17 @@ class WordCollection:
         self.words.append(word) # Probably not actually necessary, should probably get rid of this
 
     @classmethod    
-    def cols_from_file(cls, filename):
+    def wcs_from_file(cls, filename):
         state=0
         with open(filename) as file:
-            for line in file: #throw in assertion that first line is a % 
+            for line in file:  
                 line=line.strip()
 
+                if state == 0: 
+                    assert (line == '%'), "Syntax error in input file"
+
                 if line=='%':
-                    state+=1 #rename boundary count
+                    state+=1 
                     continue
 
                 elif state==1: 
@@ -47,7 +50,7 @@ class WordCollection:
 
                 elif state==2: 
                     #in list of words followed by list of dicts they belong to 
-                    line=line.split('\t') #change to be tuple unpacking??
+                    line=line.split('\t')
                     word=line[0]
                     
                     if word[-1]=='*': #remove *'s-- program will not distinguish between words and prefixes
@@ -60,6 +63,24 @@ class WordCollection:
         assert (state < 3), "Syntax error in input file"
         return WordCollection
 
+    @classmethod    
+    def match_prefix_to_wcs(cls, word):
+        print('word',word)
+        if word in cls.vocab_to_objs:
+            print('total match',cls.vocab_to_objs[word])
+            return cls.vocab_to_objs[word]
+
+        prefix=word[:-1]
+        while prefix != '':
+            if prefix+'*' in cls.vocab_to_objs:
+                print('partial match',cls.vocab_to_objs[prefix+'*'])
+                return cls.vocab_to_objs[prefix+'*']
+
+            prefix = prefix[:-1]
+
+        print('no match',word) #mysteriously never matches anything. 
+        return []
+   
 def filter_posts(filename, outputname, minwords=100):
     sub_list= set(['reddit.com','leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings'])
     alldata = pd.read_json(filename, lines=True)
@@ -92,18 +113,14 @@ def tokenize(s):
     return counter,len(tokens)
 
 
-def getfreqs(counter): 
-    counts=Counter()
-    for word, count in counter.items(): #reduce number of 'count' variables  specifcy WCcoutn v. wordCount
-        i=len(word)
-        while i>0:
-            try: #change to while prefix != '' if in vocab,,, break, prefix =prefix[:-1]
-                for d in WordCollection.vocab_to_objs[word[:i]]:
-                    counts[d]+=count
-                i=0 
-            except KeyError: 
-                i-=1	
-    return counts
+def getfreqs(words_counter): 
+    wc_counts=Counter()
+    for word, count in words_counter.items(): 
+        wcs=WordCollection.match_prefix_to_wcs(word)
+        print(wcs)
+        for wc in wcs:
+            wc_counts[wc]+=count
+    return wc_counts
 
 def calculatePosts2(posts):
     posts['dictcounts']=posts.transform({'counter': lambda x: getfreqs(x)})
@@ -129,7 +146,7 @@ if __name__ == "__main__":
     outputname='filtered_'+filename[3:10]
     filtered=filter_posts(filename, outputname)
 
-    WordCollection.cols_from_file("wordCollections.dic")
+    WordCollection.wcs_from_file("wordCollections.dic")
     absolutist = ['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole']
     WordCollection(0,'absolutist', absolutist)
 
