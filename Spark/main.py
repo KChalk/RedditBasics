@@ -33,7 +33,7 @@ def main():
     print('\n\n\n starting read and filter')
     filtered = filterPosts(file,sc,spark,subs=set(sub_list))
 
-    file="file:////g/chalkley/RedditProject/sequential/wordCollections.dic"
+    file="wordCollections.dic"
 
     WordCollection.wcs_from_file(file)
     absolutist = ['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole']
