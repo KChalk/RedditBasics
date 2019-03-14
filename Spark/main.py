@@ -41,7 +41,7 @@ def main():
     
     print('\n\n\n Getting Collection Frequencies')
 
-    collection_freqs=convertToVec(filtered,sc,spark)
+    collection_freqs=add_wc_freq(filtered,sc,spark)
 
     collection_freqs.write.csv(output+'.csv', mode='overwrite')
 
