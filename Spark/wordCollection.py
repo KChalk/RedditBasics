@@ -95,9 +95,6 @@ def getCounts(words_counter):
 def add_wc_freq(df,sc,ss,inputCol='counter'):
     getCountsUDF-udf(getCounts,  MapType(StringType(), IntegerType())
 
-        
-    posts['dictcounts']=posts.transform({'counter': lambda x: getfreqs(x)})
-
     df= df \
          .select('id','subreddit','wordcount', getCountsUDF(inputcol).alias('collection_counts'))
 
