@@ -12,6 +12,10 @@ from string import punctuation
 
 from pyspark.ml.feature import CountVectorizer
 import codecs
+
+from collections import Counter, defaultdict
+from nltk import word_tokenize
+
    
 def main():
     spark = SparkSession \
@@ -42,27 +46,27 @@ def main():
     #withvectors.write.json(output+'.json', mode='overwrite')
 
 def tokenize(s):
-    tokens=[]
-    s=s.strip().lower()
-    wordlist=re.split("[\s;,#]", s)
-    for word in wordlist: 
-        word=re.sub('^[\W\d]*','',word)
-        word=re.sub('[\W\d]*$','',word)
-        if word != '':
-            tokens.append(word)
-    return tokens
+    tokens=word_tokenize(s.lower())
+    counter=Counter(tokens)
+    return counter
+
+def sumCounter(C):
+    return sum(C.values)
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
-    tokensUDF = udf(tokenize, ArrayType(StringType()))
+    tokensUDF = udf(tokenize, MapType(StringType(), IntegerType()))
+    countUDF = udf(sumCounter, IntegerType())
+
     alldata = ss.read.json(filename)
     if subs!=set():
         alldata=alldata.filter(alldata.subreddit.isin(subs))
 
     filtered= alldata \
         .filter(alldata['is_self'] == True) 	\
-        .select('id','subreddit',tokensUDF('selftext').alias('tokens'))	\
-        .withColumn('wordcount', size('tokens'))	\
-        .filter('wordcount >='+minwords)
+        .select('id','subreddit',tokensUDF('selftext').alias('counter'))	\
+        .withColumn('wordcount', countUDF('counter'))	\
+        .filter('wordcount >='+minwords) \
+        .select('id','subreddit','counter', 'wordcount')
     return filtered
 
 def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
