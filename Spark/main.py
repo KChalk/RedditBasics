@@ -5,13 +5,16 @@ from operator import add
 import json
 from pyspark.sql.functions import udf
 from pyspark.sql.types import IntegerType, ArrayType, MapType, StringType
-from collections import defaultdict
+from collections import defaultdict, Counter
 import csv
 import re 
 from string import punctuation
 
 from pyspark.ml.feature import CountVectorizer
 import codecs
+
+from nltk import word_tokenize
+
 
 def main():
     spark = SparkSession \
