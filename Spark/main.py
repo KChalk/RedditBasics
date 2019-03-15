@@ -9,7 +9,7 @@ from collections import defaultdict, Counter
 import csv
 import re 
 from string import punctuation
-
+import numpy as np
 from pyspark.ml.feature import CountVectorizer
 import codecs
 
@@ -71,7 +71,7 @@ def sumCounter(C):
     return sum(C.values())
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
-    tokensUDF = udf(tokenize, MapType(StringType(), IntegerType()))
+    tokensUDF = udf(tokenize, type(Counter()))
     countUDF = udf(sumCounter, IntegerType())
 
     alldata = ss.read.json(filename)
@@ -109,7 +109,7 @@ class WordCollection:
     def __init__(self, num, name, words): 
         self.num=num
         self.name=name
-    self.nomen=name
+        self.nomen=name
         self.words=words 
         WordCollection.obj_list.append(self)
         WordCollection.num_to_obj[num]=self
@@ -185,7 +185,7 @@ def getCounts(words_counter):
     
 
 def add_wc_freq(df,sc,ss,inputCol='counter'):
-    getCountsUDF=udf(getCounts,  MapType(StringType(), IntegerType()))
+    getCountsUDF=udf(getCounts,  type(Counter()))
 
     df= df.select('id','subreddit','wordcount', getCountsUDF(inputCol).alias('collection_counts'))
 
