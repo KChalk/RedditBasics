@@ -50,6 +50,7 @@ def main():
     #vectors=convertToVec(filtered,sc,spark,output)
 
 def tokenize(s):
+    tokens=[]
     s=s.strip().lower()
     wordlist=re.split("[\s;,#]", s)
     for word in wordlist: 
@@ -67,7 +68,7 @@ def tokenize_nltk(s):
     return counter
 '''
 def sumCounter(C):
-    return sum(C.values)
+    return sum(C.values())
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(), IntegerType()))
