@@ -13,7 +13,7 @@ from string import punctuation
 from pyspark.ml.feature import CountVectorizer
 import codecs
 
-from nltk import word_tokenize
+#from nltk import word_tokenize
 
 
 def main():
@@ -57,15 +57,15 @@ def tokenize(s):
         word=re.sub('[\W\d]*$','',word)
         if word != '':
             tokens.append(word)
-            
+
     counter=Counter(tokens)
     return counter
-
+'''
 def tokenize_nltk(s):
     tokens=word_tokenize(s.lower())
     counter=Counter(tokens)
     return counter
-
+'''
 def sumCounter(C):
     return sum(C.values)
 
