@@ -60,7 +60,7 @@ def tokenize(s):
             tokens.append(word)
 
     counter=Counter(tokens)
-    return counter
+    return dict(counter)
 '''
 def tokenize_nltk(s):
     tokens=word_tokenize(s.lower())
@@ -181,7 +181,7 @@ def getCounts(words_counter):
         
         for wc in wcs:
             wc_counts[wc.nomen]+=count
-    return wc_counts
+    return dict(wc_counts)
     
 
 def add_wc_freq(df,sc,ss,inputCol='counter'):
