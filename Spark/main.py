@@ -50,6 +50,7 @@ def main():
     #vectors=convertToVec(filtered,sc,spark,output)
 
 def tokenize(s):
+    tokens=[]
     s=s.strip().lower()
     wordlist=re.split("[\s;,#]", s)
     for word in wordlist: 
@@ -67,7 +68,7 @@ def tokenize_nltk(s):
     return counter
 '''
 def sumCounter(C):
-    return sum(C.values)
+    return sum(C.values())
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(), IntegerType()))
@@ -108,7 +109,7 @@ class WordCollection:
     def __init__(self, num, name, words): 
         self.num=num
         self.name=name
-	self.nomen=name
+    self.nomen=name
         self.words=words 
         WordCollection.obj_list.append(self)
         WordCollection.num_to_obj[num]=self
@@ -201,7 +202,7 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
     print('\n\n\n finished group with filter \n\n\n' )
 
     for d in WordCollection.obj_list: 
-		agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
+        agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
             .drop(agg['sum('+d.nomen+')'])
 
     return agg
