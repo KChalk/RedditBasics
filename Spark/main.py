@@ -49,8 +49,19 @@ def main():
 
     #vectors=convertToVec(filtered,sc,spark,output)
 
-
 def tokenize(s):
+    s=s.strip().lower()
+    wordlist=re.split("[\s;,#]", s)
+    for word in wordlist: 
+        word=re.sub('^[\W\d]*','',word)
+        word=re.sub('[\W\d]*$','',word)
+        if word != '':
+            tokens.append(word)
+            
+    counter=Counter(tokens)
+    return counter
+
+def tokenize_nltk(s):
     tokens=word_tokenize(s.lower())
     counter=Counter(tokens)
     return counter
