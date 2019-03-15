@@ -7,7 +7,7 @@ export PYSPARK_PYTHON=python3
 spark-submit \
     --master yarn \
     --num-executors 50 \
-	main.py
+    main.py
 
 #spark-submit \
 #    --master yarn \

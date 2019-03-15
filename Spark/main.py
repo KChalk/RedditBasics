@@ -109,7 +109,7 @@ class WordCollection:
     def __init__(self, num, name, words): 
         self.num=num
         self.name=name
-	self.nomen=name
+    self.nomen=name
         self.words=words 
         WordCollection.obj_list.append(self)
         WordCollection.num_to_obj[num]=self
@@ -202,7 +202,7 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
     print('\n\n\n finished group with filter \n\n\n' )
 
     for d in WordCollection.obj_list: 
-		agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
+        agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
             .drop(agg['sum('+d.nomen+')'])
 
     return agg
