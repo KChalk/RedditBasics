@@ -71,7 +71,7 @@ def sumCounter(C):
     return sum(C.values())
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
-    tokensUDF = udf(tokenize, MapType(StringType(), IntegerType()))
+    tokensUDF = udf(tokenize, type(Counter()))
     countUDF = udf(sumCounter, IntegerType())
 
     alldata = ss.read.json(filename)
