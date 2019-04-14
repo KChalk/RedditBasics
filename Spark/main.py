@@ -12,6 +12,7 @@ from string import punctuation
 import numpy as np
 from pyspark.ml.feature import CountVectorizer
 import codecs
+from pyspark.sql.functions import lit
 
 #from nltk import word_tokenize
 # Get a local spark version. Get it. 
@@ -95,7 +96,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
             .withColumn('wordcount', countUDF('counter'))	\
             .filter('wordcount >='+minwords) \
             .select('id','subreddit','counter', 'wordcount') \
-            .withColumn('month', str(month))
+            .withColumn('month', lit(month))
 
         if firstFile:
             alldata=monthData
