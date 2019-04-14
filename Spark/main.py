@@ -80,7 +80,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(),IntegerType()))
     countUDF = udf(sumCounter, IntegerType())
 
-    alldata=sc.createDataFrame([])
+    alldata=ss.createDataFrame([])
 
     for filename in fileList:
         files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
@@ -201,7 +201,7 @@ def getCounts(words_counter):
 def add_wc_freq(df,sc,ss,inputCol='counter'):
     getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
-    df= df.select('id','subreddit', 'month', wordcount', getCountsUDF(inputCol).alias('collection_counts'))
+    df= df.select('id','subreddit', 'month','wordcount', getCountsUDF(inputCol).alias('collection_counts'))
 
     for d in WordCollection.obj_list: 
         df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
