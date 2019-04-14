@@ -14,7 +14,7 @@ from pyspark.ml.feature import CountVectorizer
 import codecs
 
 #from nltk import word_tokenize
-
+# Get a local spark version. Get it. 
 
 def main():
     spark = SparkSession \
@@ -99,7 +99,6 @@ def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
     return vectors
 
 
-
 class WordCollection: 
     obj_list=[] 
     num_to_obj={}
@@ -122,7 +121,7 @@ class WordCollection:
         self.words.append(word) # Probably not actually necessary, should probably get rid of this
 
     @classmethod    
-    def wcs_from_file(cls, filename):
+    def wcs_from_file(cls, filename): # add abs
         state=0
         with open(filename) as file:
             for line in file:  
@@ -173,7 +172,6 @@ class WordCollection:
         print('no match',word) #mysteriously never matches anything. 
         return []
    
-
 def getCounts(words_counter): 
     wc_counts=Counter()
     for word, count in words_counter.items(): 
