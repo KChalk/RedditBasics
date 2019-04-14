@@ -2,7 +2,7 @@
 
 module load hadoop 
 
-export PYSPARK_PYTHON=python3 
+#export PYSPARK_PYTHON=python3 
 
 spark-submit \
     --master yarn \

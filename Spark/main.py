@@ -71,7 +71,7 @@ def sumCounter(C):
     return sum(C.values())
 
 def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
-    tokensUDF = udf(tokenize, type(Counter()))
+    tokensUDF = udf(tokenize, MapType(StringType(),IntegerType()))
     countUDF = udf(sumCounter, IntegerType())
 
     alldata = ss.read.json(filename)
@@ -185,7 +185,7 @@ def getCounts(words_counter):
     
 
 def add_wc_freq(df,sc,ss,inputCol='counter'):
-    getCountsUDF=udf(getCounts,  type(Counter()))
+    getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
     df= df.select('id','subreddit','wordcount', getCountsUDF(inputCol).alias('collection_counts'))
 
