@@ -1,5 +1,5 @@
 %
-0   absolutist
+0	absolutist
 1	funct
 2	pronoun
 4	i
@@ -68,7 +68,7 @@ abrupt*	250	253
 abs	146	147
 absent*	354
 absolute	131	136
-absolutely	0   1	16	131	136	462
+absolutely	0	1	16	131	136	462
 abstain*	131	137
 abuse*	125	127	129
 abusi*	125	127	129
@@ -167,7 +167,7 @@ air	250	252
 alarm*	125	127	128
 alcohol*	146	150
 alive	146	360
-all	1	0   20	131	136 
+all	0	1	20	131	136 
 alla	359
 allah*	359
 allerg*	146
@@ -183,7 +183,7 @@ also	1	16	18
 altar*	359
 although	1	18
 altogether	131	136
-always	0   131	136	250	253
+always	0	131	136	250	253
 am	1	11	12	14
 amaz*	125	126
 ambigu*	131	135
@@ -798,9 +798,9 @@ compel*	131	133
 compensat*	358
 compet*	355
 complain*	121	125	127
-complete	0   131	136
+complete	0	131	136
 completed	131	136
-completely	0   1	16	131	136
+completely	0	1	16	131	136
 completes	131	136
 complex*	131	132
 compliance	131	133
@@ -849,8 +849,8 @@ considerate	125	126
 considered	131	132
 considering	131	132
 considers	131	132
-constant	0   250	253
-constantly	0   1	16	250	253
+constant	0	250	253
+constantly	0	1	16	250	253
 constipat*	146
 constrain*	131	137
 constrict*	131	137
@@ -995,7 +995,7 @@ defined	131	136
 defines	131	132
 defining	131	132
 definite	125	126	131	136
-definitely	0   1	16	125	126	131	136
+definitely	0	1	16	125	126	131	136
 definitive*	131	136
 degrad*	125	127
 delay*	131	137	250	253
@@ -1287,7 +1287,7 @@ entering	250	251
 enters	250	251
 entertain*	125	126	356
 enthus*	125	126
-entire*	0   1	20	131	136
+entire*	0	1	20	131	136
 entrance*	250	252
 envie*	125	127	129
 envious	125	127	129
@@ -1317,12 +1317,12 @@ even	1	16
 evening*	250	253
 event	250	253
 eventually	1	16	250	253
-ever	0   1	16	131	136	250	253
-every	0   1	20	131	136
+ever	0	1	16	131	136	250	253
+every	0	1	20	131	136
 everybod*	1	2	121	131	136
 everyday	250	253
-everyone*	0   1	2	121
-everything*	0   1	2	121	131	136
+everyone*	0	1	2	121
+everything*	0	1	2	121	131	136
 everywhere	250	252
 evident*	131	136
 evil*	125	127	129
@@ -1574,7 +1574,7 @@ fucker*	125	127	129	146	22
 fuckin*	125	127	129	146	22
 fucks	11	14	125	127	129	146	22
 fulfill*	355
-full*	0   1	20	250	252
+full*	0	1	20	250	252
 fume*	125	127	129
 fuming	125	127	129
 fun	125	126
@@ -2602,7 +2602,7 @@ muscle*	146	147
 muscular	146	147
 museum*	356
 musi*	356	359	140
-must	0   1	11	12	15	131	134	136
+must	0	1	11	12	15	131	134	136
 must'nt	1	11	12	15	19	131	134	136
 must've	1	11	12	13	15	131	134	136
 mustn't	1	11	12	15	19	131	134	136
@@ -2656,7 +2656,7 @@ neural*	146	147
 neurolog*	146
 neuron*	146	147
 neurotic*	125	127	128
-never	0   1	19	131	136	250	253
+never	0	1	19	131	136	250	253
 new	250	253
 newborn*	121	124
 newer	250	253
@@ -2690,7 +2690,7 @@ north*	250	252
 nose*	146	147	140
 nostril*	140	146	147
 not	1	19	131
-nothing	0   1	19
+nothing	0	1	19
 notice*	131	132
 noticing	131	132
 novel	356
@@ -4068,7 +4068,7 @@ top	250	252	355
 torah	359
 tortur*	125	127	129
 total	1	20	131	136
-totally	0   1	16	131	136
+totally	0	1	16	131	136
 touch*	140
 tough*	125	127
 toward*	1	17	250	252
@@ -4407,7 +4407,7 @@ who'd	1	2	11	12	121
 who'll	1	2	11	12	15	121
 who's	11	14	121
 whod	1	2	11	12	121
-whole	0   1	20
+whole	0	1	20
 wholl	1	2	11	12	15	121
 wholly	131	136
 whom	1	2	121
