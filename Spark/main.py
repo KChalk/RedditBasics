@@ -21,23 +21,29 @@ def main():
         .builder \
         .appName("Reddit:Revised") \
         .getOrCreate()
-        
-    #file = "RS_full_corpus.bz2"
-    file="file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"
-    output='coll_freqs_'+file[-14:-4]
 
     sc = spark.sparkContext
-    sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
 
-    # filter
-    print('\n\n\n starting read and filter')
-    filtered = filterPosts(file,sc,spark,subs=set(sub_list))
+    reloadFiles=True
+    if reloadFiles:
 
-    file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/sequential/wordCollections.dic"
+        files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
+        output='filtered_all.parquet'
+
+        sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
+        # filter
+        print('\n\n\n starting read and filter')
+        filtered = filterPosts(files,sc,spark,subs=set(sub_list))
+
+        filtered.write.parquet(output+'.csv', mode='overwrite')
+
+    else: 
+        filtered=sc.read.parquet('filtered_all.parquet')
+    
+    file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
+    output='coll_freqs_'+file[-14:-4]
 
     WordCollection.wcs_from_file(file)
-    absolutist = ['absolutely', 'all', 'always', 'complete', 'competely','constant', 'constantly', 'definitely', 'entire', 'ever', 'every', 'everyone', 'everything', 'full', 'must', 'never', 'nothing', 'totally','whole']
-    WordCollection(0,'absolutist', absolutist)
     
     print('\n\n\n Getting Collection Frequencies')
 
@@ -70,20 +76,30 @@ def tokenize_nltk(s):
 def sumCounter(C):
     return sum(C.values())
 
-def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
+def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(),IntegerType()))
     countUDF = udf(sumCounter, IntegerType())
 
-    alldata = ss.read.json(filename)
-    if subs!=set():
-        alldata=alldata.filter(alldata.subreddit.isin(subs))
+    alldata=sc.createDataFrame([])
 
-    filtered= alldata \
-        .filter(alldata['is_self'] == True) 	\
-        .select('id','subreddit',tokensUDF('selftext').alias('counter'))	\
-        .withColumn('wordcount', countUDF('counter'))	\
-        .filter('wordcount >='+minwords) \
-        .select('id','subreddit','counter', 'wordcount')
+    for filename in fileList:
+        files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
+        month=filename[-9:-4]
+        monthData = ss.read.json(filename)
+
+        if subs!=set():
+            monthData=monthData.filter(monthData.subreddit.isin(subs))
+
+        filtered= monthData \
+            .filter(monthData['is_self'] == True) 	\
+            .select('id','subreddit', tokensUDF('selftext').alias('counter'))	\
+            .withColumn('wordcount', countUDF('counter'))	\
+            .filter('wordcount >='+minwords) \
+            .select('id','subreddit','counter', 'wordcount') \
+            .withColumn('month',month)
+
+        alldata=alldata.union(filtered)
+
     return filtered
 
 def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
@@ -185,16 +201,15 @@ def getCounts(words_counter):
 def add_wc_freq(df,sc,ss,inputCol='counter'):
     getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
-    df= df.select('id','subreddit','wordcount', getCountsUDF(inputCol).alias('collection_counts'))
+    df= df.select('id','subreddit', 'month', wordcount', getCountsUDF(inputCol).alias('collection_counts'))
 
     for d in WordCollection.obj_list: 
         df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
-    agg = df.groupby(df['subreddit']) \
-        .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions':
-'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
+    agg = df.groupby(df['subreddit'], df['month']) \
+        .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions': 'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
     agg =agg.filter(agg['count(1)']>=100)
 
     print('\n\n\n finished group with filter \n\n\n' )
