@@ -155,8 +155,8 @@ class WordCollection:
 
                 elif state==1: 
                     #in list of dicionary names and codes #change to elif
-                    col_name, col_num=line.split('\t')
-                    WordCollection(col_name,col_num,[]) 
+                    col_num, col_name=line.split('\t')
+                    WordCollection(col_num,col_name,[]) 
 
                 elif state==2: 
                     #in list of words followed by list of dicts they belong to 
