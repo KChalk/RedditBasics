@@ -95,7 +95,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
             .withColumn('wordcount', countUDF('counter'))	\
             .filter('wordcount >='+minwords) \
             .select('id','subreddit','counter', 'wordcount') \
-            .withColumn('month', lambda x: x=month)
+            .withColumn('month', str(month))
 
         if firstFile:
             alldata=monthData
