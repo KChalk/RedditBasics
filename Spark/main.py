@@ -33,12 +33,13 @@ def main():
         for y in range(11,17):
             for m in range(1,13):
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
-                file.append(filename)
+                files.append(filename)
         y =17
         for m in range(1,12):
             filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
             files.append(filename)
 
+        print('files are \n\n\n',files)
         output='filtered_all'
 
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
@@ -51,16 +52,18 @@ def main():
     else: 
         filtered=sc.read.parquet('filtered_all.parquet')
     
-    file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
-    output='collection_frequencies'
+    part2=False
+    if part2:
+        file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
+        output='collection_frequencies'
 
-    WordCollection.wcs_from_file(file)
-    
-    print('\n\n\n Getting Collection Frequencies')
+        WordCollection.wcs_from_file(file)
+        
+        print('\n\n\n Getting Collection Frequencies')
 
-    collection_freqs=add_wc_freq(filtered,sc,spark)
+        collection_freqs=add_wc_freq(filtered,sc,spark)
 
-    collection_freqs.write.csv(output+'.csv', mode='overwrite', header=True)
+        collection_freqs.write.csv(output+'.csv', mode='overwrite', header=True)
 
     #print('\n\n\n Vectorizing')
 
@@ -95,6 +98,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
     for filename in fileList:
         files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
         month=filename[-9:-4]
+        print('\n\n\n reading', month, filename)
         monthData = ss.read.json(filename)
 
         if subs!=set():
