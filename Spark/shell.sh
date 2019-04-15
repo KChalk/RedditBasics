@@ -6,7 +6,7 @@ module load hadoop
 
 spark-submit \
     --master yarn \
-    --num-executors 50 \
+    --num-executors 100 \
     main.py
 
 #spark-submit \
