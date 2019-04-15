@@ -51,7 +51,7 @@ def main():
         filtered.write.parquet(output+'.parquet', mode='overwrite')
 
     else: 
-        filtered=ss.read.parquet('filtered_all.parquet')
+        filtered=spark.read.parquet('filtered_all.parquet')
     
     part2=True
     if part2:
