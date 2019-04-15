@@ -26,6 +26,7 @@ def main():
     sc = spark.sparkContext
 
     reloadFiles=True
+    #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
