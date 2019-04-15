@@ -27,22 +27,32 @@ def main():
 
     reloadFiles=True
     if reloadFiles:
+        files=[]
+        file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
+        file_suffix='.bz2'
+        for y in range(11,17):
+            for m in range(1,13):
+                filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
+                file.append(filename)
+        y =17
+        for m in range(1,12):
+            filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
+            files.append(filename)
 
-        files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
-        output='filtered_all.parquet'
+        output='filtered_all'
 
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
         # filter
         print('\n\n\n starting read and filter')
         filtered = filterPosts(files,sc,spark,subs=set(sub_list))
 
-        filtered.write.parquet(output+'.csv', mode='overwrite')
+        filtered.write.parquet(output+'.parquet', mode='overwrite')
 
     else: 
         filtered=sc.read.parquet('filtered_all.parquet')
     
     file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
-    output='coll_freqs_'+file[-14:-4]
+    output='collection_frequencies'
 
     WordCollection.wcs_from_file(file)
     
@@ -50,7 +60,7 @@ def main():
 
     collection_freqs=add_wc_freq(filtered,sc,spark)
 
-    collection_freqs.write.csv(output+'.csv', mode='overwrite')
+    collection_freqs.write.csv(output+'.csv', mode='overwrite', header=True)
 
     #print('\n\n\n Vectorizing')
 
