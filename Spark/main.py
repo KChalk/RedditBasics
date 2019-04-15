@@ -26,6 +26,7 @@ def main():
     sc = spark.sparkContext
 
     reloadFiles=True
+    badMonths=[(12,17),(6,12)]
     #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
         files=[]
@@ -33,12 +34,11 @@ def main():
         file_suffix='.bz2'
         for y in range(11,17):
             for m in range(1,13):
+                if (m,y) in badMonths:
+                    continue
+                    
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
                 files.append(filename)
-        y =17
-        for m in range(1,12):
-            filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
-            files.append(filename)
 
         print('files are \n\n\n',files)
         output='filtered_all'
