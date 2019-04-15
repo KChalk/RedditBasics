@@ -32,7 +32,7 @@ def main():
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
-        for y in range(11,17):
+        for y in range(11,18):
             for m in range(1,13):
                 if (m,y) in badMonths:
                     continue
@@ -118,7 +118,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
         else:
             alldata=alldata.union(filtered)
 
-    return filtered
+    return alldata
 
 def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
     cv=CountVectorizer(inputCol=inputCol, outputCol='vectors',minTF=1.0)
