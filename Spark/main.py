@@ -113,7 +113,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
             .withColumn('month', lit(month))
 
         if firstFile:
-            alldata=monthData
+            alldata=filtered
             firstFile=False
         else:
             alldata=alldata.union(filtered)
