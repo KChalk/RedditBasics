@@ -51,7 +51,7 @@ def main():
         filtered.write.parquet(output+'.parquet', mode='overwrite')
 
     else: 
-        filtered=ss.read.parquet('filtered_all.parquet')
+        filtered=spark.read.parquet('filtered_all.parquet')
     
     part2=True
     if part2:
@@ -226,7 +226,7 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
-    agg = df.groupby(df['subreddit'], df['month']) \
+    agg = df.groupby( df['month'],df['subreddit']) \
         .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions': 'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
     agg =agg.filter(agg['count(1)']>=100)
 
