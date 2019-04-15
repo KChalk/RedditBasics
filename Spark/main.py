@@ -25,7 +25,7 @@ def main():
 
     sc = spark.sparkContext
 
-    reloadFiles=False
+    reloadFiles=True
     badMonths=[(12,17),(6,12)]
     #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
@@ -97,7 +97,6 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
 
     firstFile=True
     for filename in fileList:
-        files=["file:////l2/corpora/reddit/submissions/RS_2016-05.bz2"]
         month=filename[-9:-4]
         print('\n\n\n reading', month, filename)
         monthData = ss.read.json(filename)
@@ -115,6 +114,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
 
         if firstFile:
             alldata=monthData
+            firstFile=False
         else:
             alldata=alldata.union(filtered)
 
@@ -226,7 +226,7 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
-    agg = df.groupby( df['month'],df['subreddit']) \
+    agg = df.groupby(df['subreddit'], df['month']) \
         .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions': 'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
     agg =agg.filter(agg['count(1)']>=100)
 
