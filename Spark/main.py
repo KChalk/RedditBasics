@@ -33,7 +33,7 @@ def main():
         for y in range(11,17):
             for m in range(1,13):
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
-                file.append(filename)
+                files.append(filename)
         y =17
         for m in range(1,12):
             filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
