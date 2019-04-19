@@ -40,15 +40,12 @@ def main():
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
                 files.append(filename)
 
-        print('files are \n\n\n',files)
-        output='filtered_all'
+        fRDD= sc.parallelize(files)
 
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
-        # filter
-        print('\n\n\n starting read and filter')
-        filtered = filterPosts(files,sc,spark,subs=set(sub_list))
 
-        filtered.write.parquet(output+'.parquet', mode='overwrite')
+        print('\n\n\n starting read and filter')
+        filteredDFs=fRDD.map(lambda x: Row(fname=x, filteredDF=filterPosts(x,sc,spark,subs=set(sub_list))))
 
     else: 
         filtered=spark.read.parquet('filtered_all.parquet')
@@ -91,34 +88,27 @@ def tokenize_nltk(s):
 def sumCounter(C):
     return sum(C.values())
 
-def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
+def filterPosts(filename, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(),IntegerType()))
     countUDF = udf(sumCounter, IntegerType())
 
-    firstFile=True
-    for filename in fileList:
-        month=filename[-9:-4]
-        print('\n\n\n reading', month, filename)
-        monthData = ss.read.json(filename)
+    month=filename[-9:-4]
+    print('\n\n\n reading', month, filename)
+    monthData = ss.read.json(filename)
 
-        if subs!=set():
-            monthData=monthData.filter(monthData.subreddit.isin(subs))
+    if subs!=set():
+        monthData=monthData.filter(monthData.subreddit.isin(subs))
 
-        filtered= monthData \
-            .filter(monthData['is_self'] == True) 	\
-            .select('id','subreddit', tokensUDF('selftext').alias('counter'))	\
-            .withColumn('wordcount', countUDF('counter'))	\
-            .filter('wordcount >='+minwords) \
-            .select('id','subreddit','counter', 'wordcount') \
-            .withColumn('month', lit(month))
+    filtered= monthData \
+        .filter(monthData['is_self'] == True) 	\
+        .select('id','subreddit', tokensUDF('selftext').alias('counter'))	\
+        .withColumn('wordcount', countUDF('counter'))	\
+        .filter('wordcount >='+minwords) \
+        .select('id','subreddit','counter', 'wordcount') \
+        .withColumn('month', lit(month))
 
-        if firstFile:
-            alldata=filtered
-            firstFile=False
-        else:
-            alldata=alldata.union(filtered)
-
-    return alldata
+    filtered.write.parquet('filtered_'+ month +'.parquet', mode='overwrite')
+    return filtered
 
 def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
     cv=CountVectorizer(inputCol=inputCol, outputCol='vectors',minTF=1.0)
