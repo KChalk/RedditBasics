@@ -38,7 +38,7 @@ def main():
                     continue
                     
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
-                files.append((filename,month))
+                files.append((filename,(m,y)))
 
         fRDD= sc.parallelize(files)
 
