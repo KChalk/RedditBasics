@@ -50,7 +50,7 @@ def main():
     else: 
         filtered=spark.read.parquet('filtered_all.parquet')
     
-    part2=True
+    part2=False
     if part2:
         file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
         output='collection_frequencies'
