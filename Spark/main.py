@@ -38,15 +38,15 @@ def main():
                     continue
                     
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
-                files.append(filename)
+                files.append((filename,month))
 
         fRDD= sc.parallelize(files)
 
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
 
         print('\n\n\n starting read and filter')
-        filteredDFs=fRDD.map(lambda x: Row(fname=x, filteredDF=filterPosts(x,sc,spark,subs=set(sub_list))))
-        filteredDFs.write.parquet('filtered_all.parquet', mode='overwrite')
+        filteredDFs=fRDD.map(lambda x: Row(fname=x[0], filteredDF=filterPosts(x[0],sc,spark,subs=set(sub_list))))
+        filteredDFs.toDF().write.parquet('filtered_all.parquet', mode='overwrite')
 
     else: 
         filtered=spark.read.parquet('filtered_all.parquet')
