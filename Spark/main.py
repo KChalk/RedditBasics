@@ -46,7 +46,8 @@ def main():
 
         print('\n\n\n starting read and filter')
         filteredDFs=fRDD.map(lambda x: Row(fname=x[0], filteredDF=filterPosts(x[0],sc,spark,subs=set(sub_list))))
-        filteredDFs.toDF().write.parquet('filtered_all.parquet', mode='overwrite')
+        filteredDFs.saveAsTextFile ("filtered_all_rdd.txt")
+	#filteredDFs.collect().toDF().write.parquet('filtered_all.parquet', mode='overwrite')
 
     else: 
         filtered=spark.read.parquet('filtered_all.parquet')
