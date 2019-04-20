@@ -1,5 +1,5 @@
 from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession, Row, createDataFrame
+from pyspark.sql import SparkSession, Row
 from pyspark.sql.functions import size, split, udf, lit
 from pyspark.sql.types import IntegerType, ArrayType, MapType, StringType
 from pyspark.ml.feature import CountVectorizer
@@ -45,7 +45,7 @@ def main():
 
         print('\n\n\n starting read and filter')
         filteredDFs=fRDD.map(lambda x: Row(fname=x[0], filteredDF=filterPosts(x[0],sc,spark,subs=set(sub_list))))
-        df=createDataFrame(filteredDFs)
+        df=spark.createDataFrame(filteredDFs)
         df.write.parquet('filtered_all.parquet', mode='overwrite')
 
     else: 
