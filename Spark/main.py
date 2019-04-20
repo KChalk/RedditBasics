@@ -111,7 +111,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
             .filter('wordcount >='+minwords) \
             .select('id','subreddit','counter', 'wordcount') \
             .withColumn('month', lit(month))
-        print('\n\n\n saving, ' month)
+        print('\n\n\n saving', month)
         filtered.write.parquet('filtered_'+month+'.parquet', mode='overwrite')
         if firstFile:
             alldata=filtered
