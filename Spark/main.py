@@ -25,7 +25,8 @@ def main():
 
     sc = spark.sparkContext
 
-    reloadFiles=True
+    reloadFiles=False
+    collectFiles=True
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
@@ -40,17 +41,32 @@ def main():
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
                 files.append(filename)
 
-        print('files are \n\n\n',files)
         output='filtered_all'
 
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
         # filter
         print('\n\n\n starting read and filter')
         filtered = filterPosts(files,sc,spark,subs=set(sub_list))
-
         filtered.write.parquet(output+'.parquet', mode='overwrite')
 
-    else: 
+    elif collectFiles: 
+        file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
+        file_suffix='.bz2'
+        firstFile=True
+
+        for y in range(11,18):
+            for m in range(1,13):
+                if (m,y) in badMonths:
+                    continue
+                filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
+                filtered_month=spark.read.parquet(filename)
+
+                if firstFile:
+                    filtered=filtered_month
+                    firstFile=False
+                else:
+                    filtered=filtered.union(filtered_month)
+    else:
         filtered=spark.read.parquet('filtered_all.parquet')
     
     part2=True
