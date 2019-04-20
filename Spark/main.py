@@ -41,13 +41,11 @@ def main():
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
                 files.append(filename)
 
-        output='filtered_all'
-
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
         # filter
         print('\n\n\n starting read and filter')
         filtered = filterPosts(files,sc,spark,subs=set(sub_list))
-        filtered.write.parquet(output+'.parquet', mode='overwrite')
+        filtered.write.parquet('filtered_all.parquet', mode='overwrite')
 
     elif collectFiles: 
         file_prefix='filtered_'
@@ -66,6 +64,8 @@ def main():
                     firstFile=False
                 else:
                     filtered=filtered.union(filtered_month)
+        filtered.write.parquet('filtered_all.parquet', mode='overwrite')
+
     else:
         filtered=spark.read.parquet('filtered_all.parquet')
     
