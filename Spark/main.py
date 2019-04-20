@@ -26,7 +26,7 @@ def main():
     sc = spark.sparkContext
 
     reloadFiles=False
-    collectFiles=True
+    collectFiles=False
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
@@ -69,7 +69,7 @@ def main():
     else:
         filtered=spark.read.parquet('filtered_all.parquet')
     
-    part2=False
+    part2=True
     if part2:
         file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
         output='collection_frequencies'
