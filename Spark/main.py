@@ -1,18 +1,17 @@
 from pyspark import SparkContext, SparkConf
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import size, split
+from pyspark.sql import SparkSession, Row, createDataFrame
+from pyspark.sql.functions import size, split, udf, lit
+from pyspark.sql.types import IntegerType, ArrayType, MapType, StringType
+from pyspark.ml.feature import CountVectorizer
+
 from operator import add
 import json
-from pyspark.sql.functions import udf
-from pyspark.sql.types import IntegerType, ArrayType, MapType, StringType
 from collections import defaultdict, Counter
 import csv
 import re 
 from string import punctuation
 import numpy as np
-from pyspark.ml.feature import CountVectorizer
 import codecs
-from pyspark.sql.functions import lit
 
 #from nltk import word_tokenize
 # Get a local spark version. Get it. 
@@ -46,8 +45,8 @@ def main():
 
         print('\n\n\n starting read and filter')
         filteredDFs=fRDD.map(lambda x: Row(fname=x[0], filteredDF=filterPosts(x[0],sc,spark,subs=set(sub_list))))
-        filteredDFs.saveAsTextFile ("filtered_all_rdd.txt")
-	#filteredDFs.collect().toDF().write.parquet('filtered_all.parquet', mode='overwrite')
+        df=createDataFrame(filteredDFs)
+        df.write.parquet('filtered_all.parquet', mode='overwrite')
 
     else: 
         filtered=spark.read.parquet('filtered_all.parquet')
