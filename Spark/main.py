@@ -26,7 +26,7 @@ def main():
     sc = spark.sparkContext
 
     reloadFiles=True
-    badMonths=[(12,17),(6,12)]
+    badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
     if reloadFiles:
         files=[]
@@ -111,7 +111,7 @@ def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
             .filter('wordcount >='+minwords) \
             .select('id','subreddit','counter', 'wordcount') \
             .withColumn('month', lit(month))
-
+        print('\n\n\n saving, ' month)
         filtered.write.parquet('filtered_'+month+'.parquet', mode='overwrite')
         if firstFile:
             alldata=filtered
