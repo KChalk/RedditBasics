@@ -45,7 +45,7 @@ def main():
 
         print('\n\n\n starting read and filter')
         filteredDFs=fRDD.map(lambda x: Row(fname=x[0], filteredDF=filterPosts(x[0],sc,spark,subs=set(sub_list))))
-        df=spark.createDataFrame(filteredDFs)
+        df=sc.createDataFrame(filteredDFs)
         allmonths=df.filteredDF.union(df.filteredDF)
         allmonths.write.parquet('filtered_all.parquet', mode='overwrite')
 
