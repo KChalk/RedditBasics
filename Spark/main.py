@@ -32,7 +32,7 @@ def main():
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
-        for y in range(11,18):
+        for y in range(12,18):
             for m in range(1,13):
                 if (m,y) in badMonths:
                     continue
