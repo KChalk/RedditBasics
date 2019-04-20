@@ -50,8 +50,8 @@ def main():
         filtered.write.parquet(output+'.parquet', mode='overwrite')
 
     elif collectFiles: 
-        file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
-        file_suffix='.bz2'
+        file_prefix='filtered_'
+        file_suffix='.parquet'
         firstFile=True
 
         for y in range(12,18):
