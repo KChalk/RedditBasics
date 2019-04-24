@@ -27,7 +27,7 @@ def main():
 
     sc = spark.sparkContext
 
-    reloadFiles=True
+    reloadFiles=False
     collectFiles=False
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
@@ -78,12 +78,13 @@ def main():
         output='collection_frequencies'
 
         WordCollection.wcs_from_file(file)
-
-        wc = sc.broadcast(WordCollection)        
+	
+	global WC
+        WC = sc.broadcast(WordCollection)        
         
         print('\n\n\n Getting Collection Frequencies')
 
-        collection_freqs=add_wc_freq(filtered,wc, sc,spark)
+        collection_freqs=add_wc_freq(filtered,WC, sc,spark)
     
         print('\n\n\n writing')
 
@@ -237,7 +238,7 @@ def getCounts(words_counter):
     print('counting')
     wc_counts=Counter()
     for word, count in words_counter.items(): 
-        wcs=wc.value..match_prefix_to_wcs(word)
+        wcs=WC.value.match_prefix_to_wcs(word)
         
         for wc in wcs:
             wc_counts[wc.nomen]+=count
