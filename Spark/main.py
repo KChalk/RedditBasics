@@ -32,12 +32,12 @@ def main():
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
 
-    if reloadFiles: # know whehter this is head node or all executors -> make into broadcast variable.
+    if reloadFiles: # know whether this is head node or all executors -> make into broadcast variable.
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
         for y in range(12,13):
-            for m in range(1,13):
+            for m in range(1,3):
                 if (m,y) in badMonths:
                     continue
                     
@@ -77,14 +77,15 @@ def main():
         file="/mnt/filevault-b/2/homes/chalkley/cluster/RedditProject/Spark/wordCollections.dic"
         output='collection_frequencies'
 
-        WordCollection.wcs_from_file(file)
+        sentiments = SentimentCollection()
+        sentiments.populate_from_file(file)
 
-	global WC
-        WC = sc.broadcast(WordCollection)        
+	    global SENTIMENTS
+        SENTIMENTS = sc.broadcast(sentiments)        
 
         print('\n\n\n Getting Collection Frequencies')
 
-        collection_freqs=add_wc_freq(filtered,WC, sc,spark)
+        collection_freqs=add_wc_freq(filtered, sc,spark)
     
         print('\n\n\n writing')
 
@@ -95,7 +96,6 @@ def main():
     #vectors=convertToVec(filtered,sc,spark,output)
 
 def tokenize(s):
-    print('tokenizing')
     tokens=[]
     s=s.strip().lower()
     wordlist=re.split("[\s;,#]", s)
@@ -115,7 +115,6 @@ def tokenize_nltk(s):
 '''
 def sumCounter(C):
     return sum(C.values())
-
 
 #file map branch idea. sc.parallel(filelist).foreach(filterposts)
 def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
@@ -160,31 +159,22 @@ def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
     vectors= vecModel.transform(df).select('id','subreddit','vectors')
     return vectors
 
+class SentimentCollection:
+    def __init__ (self):
+        sentiment_name_list=[] 
+        num_to_name={}
+        name_to_words={}
+        vocab_to_names=defaultdict(list)
 
-class WordCollection: 
-    obj_list=[] 
-    num_to_obj={}
-    name_to_obj={}
-    vocab_to_objs=defaultdict(list)
-
-    def __init__(self, num, name, words): 
-        self.num=num
-        self.name=name
-        self.nomen=name
-        self.words=words 
-        WordCollection.obj_list.append(self)
-        WordCollection.num_to_obj[num]=self
-        WordCollection.name_to_obj[name]=self
+    def add_sentiment(self, num, name, words):
+        self.sentiment_name_list.append(name)
+        self.num_to_name[num]=name
+        self.name_to_words[name]=words
         for w in words: 
-            WordCollection.vocab_to_objs[w].append(self)# possibly use new add word method here
-    
-    def add_word(self,word):
-        WordCollection.vocab_to_objs[word].append(self)
-        self.words.append(word) # Probably not actually necessary, should probably get rid of this
+            self.vocab_to_names[w].append(name)
 
-    @classmethod    
-    def wcs_from_file(cls, filename): # add abs
-        state=0
+    def populate_from_file(self,filename):
+       state=0
         with open(filename) as file:
             for line in file:  
                 line=line.strip()
@@ -199,53 +189,45 @@ class WordCollection:
                 elif state==1: 
                     #in list of dicionary names and codes #change to elif
                     col_num, col_name=line.split('\t')
-                    WordCollection(col_num,col_name,[]) 
+                    self.add_sentiment(col_num, col_name,[]) 
 
                 elif state==2: 
                     #in list of words followed by list of dicts they belong to 
                     line=line.split('\t')
                     word=line[0]
                     
-                    if word[-1]=='*': #remove *'s-- program will not distinguish between words and prefixes
-                        word=word[:-1]
-                    
-                    for col_num in line[1:]:
-                        obj= cls.num_to_obj[col_num]
-                        obj.add_word(word)
+                    for sentiment_num in line[1:]:
+                        sentiment_name = self.num_to_name[sentiment_num]
+                        self.name_to_words[sentiment_name].append(word)
+                        self.vocab_to_names[word].append(name)
                         
         assert (state < 3), "Syntax error in input file"
-        return WordCollection
+        return self
 
-    @classmethod    
-    def match_prefix_to_wcs(cls, word):
-        print('word',word)
-        if word in cls.vocab_to_objs:
-            print('total match',cls.vocab_to_objs[word])
-            return cls.vocab_to_objs[word]
+    def match_prefix_to_sentiments(self, word):
+        if word in self.vocab_to_names:
+            return self.vocab_to_names[word]
 
         prefix=word[:-1]
         while prefix != '':
-            if prefix+'*' in cls.vocab_to_objs:
-                print('partial match',cls.vocab_to_objs[prefix+'*'])
-                return cls.vocab_to_objs[prefix+'*']
+            if prefix+'*' in self.vocab_to_names:
+                return self.vocab_to_objs[prefix+'*']
 
             prefix = prefix[:-1]
-
-        print('no match',word) #mysteriously never matches anything. 
         return []
    
 def getCounts(words_counter): 
     print('counting')
     wc_counts=Counter()
     for word, count in words_counter.items(): 
-        wcs=WC.value.match_prefix_to_wcs(word)
+        wcs=SENTIMENTS.value.match_prefix_to_sentiments(word)
         
         for wc in wcs:
-            wc_counts[wc.nomen]+=count
+            wc_counts[wc]+=count
     return dict(wc_counts)
     
 
-def add_wc_freq(df, broadWC, sc,ss,inputCol='counter'):
+def add_wc_freq(df, sc,ss,inputCol='counter'):
     getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
     df= df.select('id','subreddit', 'month', 'wordcount', getCountsUDF(inputCol).alias('collection_counts'))
