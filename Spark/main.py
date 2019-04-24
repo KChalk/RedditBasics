@@ -18,6 +18,8 @@ from pyspark.sql.functions import lit
 # Get a local spark version. Get it. 
 
 def main():
+    print('foo')
+
     spark = SparkSession \
         .builder \
         .appName("Reddit:Revised") \
@@ -29,7 +31,8 @@ def main():
     collectFiles=False
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
-    if reloadFiles:
+
+    if reloadFiles: # know whehter this is head node or all executors -> make into broadcast variable.
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
@@ -44,7 +47,7 @@ def main():
         sub_list= ['leagueoflegends', 'gaming', 'DestinyTheGame', 'DotA2', 'ContestofChampions', 'StarWarsBattlefront', 'Overwatch', 'WWII', 'hearthstone', 'wow', 'heroesofthestorm', 'destiny2', 'darksouls3', 'fallout', 'SuicideWatch', 'depression', 'OCD', 'dpdr', 'proED', 'Anxiety', 'BPD', 'socialanxiety', 'mentalhealth', 'ADHD', 'bipolar', 'buildapc', 'techsupport', 'buildapcforme', 'hacker', 'SuggestALaptop', 'hardwareswap', 'laptops', 'computers', 'pcmasterrace', 'relationshps', 'relationship_advice', 'breakups', 'dating_advice', 'LongDistance', 'polyamory', 'wemetonline', 'MDMA', 'Drugs', 'trees', 'opiates', 'LSD', 'tifu', 'r4r', 'AskReddit', 'reddit.com', 'tipofmytongue', 'Life', 'Advice', 'jobs', 'teenagers', 'HomeImprovement', 'redditinreddit', 'FIFA', 'nba', 'hockey', 'nfl', 'mls', 'baseball', 'BokuNoHeroAcademia', 'anime', 'movies', 'StrangerThings']
         # filter
         print('\n\n\n starting read and filter')
-        filtered = filterPosts(files,sc,spark,subs=set(sub_list))
+        filtered = filterPosts(files,sc,spark,subs=set(sub_list)) # also saves filtered posts by month
         filtered.write.parquet('filtered_all.parquet', mode='overwrite')
 
     elif collectFiles: 
@@ -79,6 +82,8 @@ def main():
         print('\n\n\n Getting Collection Frequencies')
 
         collection_freqs=add_wc_freq(filtered,sc,spark)
+    
+        print('\n\n\n writing')
 
         collection_freqs.write.csv(output+'.csv', mode='overwrite', header=True)
 
@@ -107,6 +112,8 @@ def tokenize_nltk(s):
 def sumCounter(C):
     return sum(C.values())
 
+
+#file map branch idea. sc.parallel(filelist).foreach(filterposts)
 def filterPosts(fileList, sc, ss, subs=set(), minwords='100'):
     tokensUDF = udf(tokenize, MapType(StringType(),IntegerType()))
     countUDF = udf(sumCounter, IntegerType())
@@ -245,7 +252,7 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
     #aggregate per dict counts by subreddit
     agg = df.groupby(df['subreddit'], df['month']) \
         .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions': 'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
-    agg =agg.filter(agg['count(1)']>=100)
+    agg = agg.filter(agg['count(1)']>=100)
 
     print('\n\n\n finished group with filter \n\n\n' )
 
@@ -254,19 +261,6 @@ def add_wc_freq(df,sc,ss,inputCol='counter'):
             .drop(agg['sum('+d.nomen+')'])
 
     return agg
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
