@@ -79,7 +79,7 @@ def main():
 
         WordCollection.wcs_from_file(file)
 
-        wc = sc.broadcast(WordCollection)        
+        WC = sc.broadcast(WordCollection)        
         
         print('\n\n\n Getting Collection Frequencies')
 
@@ -237,7 +237,7 @@ def getCounts(words_counter):
     print('counting')
     wc_counts=Counter()
     for word, count in words_counter.items(): 
-        wcs=wc.value..match_prefix_to_wcs(word)
+        wcs=WC.value.match_prefix_to_wcs(word)
         
         for wc in wcs:
             wc_counts[wc.nomen]+=count
