@@ -27,7 +27,7 @@ def main():
 
     sc = spark.sparkContext
 
-    reloadFiles=False
+    reloadFiles=True
     collectFiles=False
     badMonths=[(12,17),(6,12),(11,1)]
     #add list of poorly nehaving files, to include 2012-06
@@ -36,7 +36,7 @@ def main():
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
-        for y in range(12,18):
+        for y in range(12,13):
             for m in range(1,13):
                 if (m,y) in badMonths:
                     continue
@@ -56,7 +56,7 @@ def main():
         firstFile=True
 
         for y in range(12,18):
-            for m in range(1,13):
+            for m in range(1,3):
                 if (m,y) in badMonths:
                     continue
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
@@ -94,6 +94,7 @@ def main():
     #vectors=convertToVec(filtered,sc,spark,output)
 
 def tokenize(s):
+    print('tokenizing')
     tokens=[]
     s=s.strip().lower()
     wordlist=re.split("[\s;,#]", s)
@@ -233,6 +234,7 @@ class WordCollection:
         return []
    
 def getCounts(words_counter): 
+    print('counting')
     wc_counts=Counter()
     for word, count in words_counter.items(): 
         wcs=wc.value..match_prefix_to_wcs(word)
@@ -246,12 +248,16 @@ def add_wc_freq(df, broadWC, sc,ss,inputCol='counter'):
     getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
     df= df.select('id','subreddit', 'month', 'wordcount', getCountsUDF(inputCol).alias('collection_counts'))
+    print('selected columns')
 
     for d in WordCollection.obj_list: 
+	print('adding ',d.nomen , 'column')
         df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
+    print('grouping')
+
     agg = df.groupby(df['subreddit'], df['month']) \
         .agg({"*": "count", "wordcount": "sum", 'absolutist': "sum",'funct' : "sum", 'pronoun' : "sum", 'i' : "sum", 'we' : "sum", 'you' : "sum", 'shehe' : "sum", 'they' : "sum", 'article' : "sum", 'verb' : "sum", 'auxverb' : "sum", 'past' : "sum", 'present' : "sum", 'future' : "sum", 'adverb' : "sum", 'preps' : "sum", 'conjunctions': 'sum','negate' : "sum", 'quant' : "sum", 'number' : "sum", 'swear' : "sum", 'social' : "sum", 'family' : "sum", 'friend' : "sum", 'humans' : "sum", 'affect' : "sum", 'posemo' : "sum", 'negemo' : "sum", 'anx' : "sum", 'anger' : "sum", 'sad' : "sum", 'cogmech' : "sum", 'insight' : "sum", 'cause' : "sum", 'discrep' : "sum", 'tentat' : "sum", 'certain' : "sum", 'inhib' : "sum", 'percept' : "sum", 'bio' : "sum", 'body' : "sum", 'ingest' : "sum", 'relativ' : "sum", 'motion' : "sum", 'space' : "sum", 'time' : "sum", 'work' : "sum", 'achieve' : "sum", 'leisure' : "sum", 'home' : "sum", 'money' : "sum", 'relig' : "sum", 'death' : "sum", 'assent' : "sum", 'nonfl' : "sum", 'filler' : "sum"})
     agg = agg.filter(agg['count(1)']>=100)
