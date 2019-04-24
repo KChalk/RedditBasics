@@ -78,10 +78,12 @@ def main():
         output='collection_frequencies'
 
         WordCollection.wcs_from_file(file)
+
+        wc = sc.broadcast(WordCollection)        
         
         print('\n\n\n Getting Collection Frequencies')
 
-        collection_freqs=add_wc_freq(filtered,sc,spark)
+        collection_freqs=add_wc_freq(filtered,wc, sc,spark)
     
         print('\n\n\n writing')
 
@@ -233,14 +235,14 @@ class WordCollection:
 def getCounts(words_counter): 
     wc_counts=Counter()
     for word, count in words_counter.items(): 
-        wcs=WordCollection.match_prefix_to_wcs(word)
+        wcs=wc.value..match_prefix_to_wcs(word)
         
         for wc in wcs:
             wc_counts[wc.nomen]+=count
     return dict(wc_counts)
     
 
-def add_wc_freq(df,sc,ss,inputCol='counter'):
+def add_wc_freq(df, broadWC, sc,ss,inputCol='counter'):
     getCountsUDF=udf(getCounts, MapType(StringType(),IntegerType()))
 
     df= df.select('id','subreddit', 'month', 'wordcount', getCountsUDF(inputCol).alias('collection_counts'))
