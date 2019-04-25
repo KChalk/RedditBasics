@@ -80,7 +80,7 @@ def main():
         sentiments = SentimentCollection()
         sentiments.populate_from_file(file)
 
-	    global SENTIMENTS
+	global SENTIMENTS
         SENTIMENTS = sc.broadcast(sentiments)        
 
         print('\n\n\n Getting Collection Frequencies')
@@ -174,7 +174,7 @@ class SentimentCollection:
             self.vocab_to_names[w].append(name)
 
     def populate_from_file(self,filename):
-       state=0
+        state=0
         with open(filename) as file:
             for line in file:  
                 line=line.strip()
