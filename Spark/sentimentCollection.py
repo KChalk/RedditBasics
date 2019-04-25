@@ -66,7 +66,7 @@ class SentimentCollection:
         prefix=word[:-1]
         while prefix != '':
             if prefix+'*' in self.vocab_to_names:
-                return self.vocab_to_objs[prefix+'*']
+                return self.vocab_to_names[prefix+'*']
 
             prefix = prefix[:-1]
         return []
