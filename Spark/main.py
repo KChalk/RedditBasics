@@ -79,8 +79,8 @@ def main():
 
         sentiments = SentimentCollection()
         sentiments.populate_from_file(file)
-
-	    global SENTIMENTS
+        
+        global SENTIMENTS
         SENTIMENTS = sc.broadcast(sentiments)        
 
         print('\n\n\n Getting Collection Frequencies')
@@ -174,7 +174,7 @@ class SentimentCollection:
             self.vocab_to_names[w].append(name)
 
     def populate_from_file(self,filename):
-       state=0
+        state=0
         with open(filename) as file:
             for line in file:  
                 line=line.strip()
@@ -234,7 +234,7 @@ def add_wc_freq(df, sc,ss,inputCol='counter'):
     print('selected columns')
 
     for d in WordCollection.obj_list: 
-	print('adding ',d.nomen , 'column')
+    print('adding ',d.nomen , 'column')
         df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
 
     df=df.drop('collection_counts')
