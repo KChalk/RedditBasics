@@ -161,13 +161,13 @@ def convertToVec(df, sc, ss, outputName, inputCol='tokens'):
 
 class SentimentCollection:
     def __init__ (self):
-        sentiment_name_list=[] 
-        num_to_name={}
-        name_to_words={}
-        vocab_to_names=defaultdict(list)
+        self.name_list=[] 
+        self.num_to_name={}
+        self.name_to_words={}
+        self.vocab_to_names=defaultdict(list)
 
     def add_sentiment(self, num, name, words):
-        self.sentiment_name_list.append(name)
+        self.name_list.append(name)
         self.num_to_name[num]=name
         self.name_to_words[name]=words
         for w in words: 
@@ -199,7 +199,7 @@ class SentimentCollection:
                     for sentiment_num in line[1:]:
                         sentiment_name = self.num_to_name[sentiment_num]
                         self.name_to_words[sentiment_name].append(word)
-                        self.vocab_to_names[word].append(name)
+                        self.vocab_to_names[word].append(sentiment_name)
                         
         assert (state < 3), "Syntax error in input file"
         return self
@@ -233,9 +233,8 @@ def add_wc_freq(df, sc,ss,inputCol='counter'):
     df= df.select('id','subreddit', 'month', 'wordcount', getCountsUDF(inputCol).alias('collection_counts'))
     print('selected columns')
 
-    for d in WordCollection.obj_list: 
-    print('adding ',d.nomen , 'column')
-        df=df.withColumn(d.nomen, df['collection_counts'][d.nomen])
+    for d in SENTIMENTS.value.name_list: 
+        df=df.withColumn(d, df['collection_counts'][d])
 
     df=df.drop('collection_counts')
     #aggregate per dict counts by subreddit
@@ -247,9 +246,9 @@ def add_wc_freq(df, sc,ss,inputCol='counter'):
 
     print('\n\n\n finished group with filter \n\n\n' )
 
-    for d in WordCollection.obj_list: 
-        agg=agg.withColumn(d.nomen+'_freq', agg['sum('+d.nomen+')']/agg['sum(wordcount)']) \
-            .drop(agg['sum('+d.nomen+')'])
+    for d in SENTIMENTS.value.name_list: 
+        agg=agg.withColumn(d+'_freq', agg['sum('+d+')']/agg['sum(wordcount)']) \
+            .drop(agg['sum('+d+')'])
 
     return agg
 
