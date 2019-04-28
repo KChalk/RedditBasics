@@ -17,8 +17,6 @@ from pyspark.sql.functions import lit
 # Get a local spark version. Get it. 
 
 def main():
-    print('foo')
-
     spark = SparkSession \
         .builder \
         .appName("Reddit:Revised") \
@@ -30,15 +28,15 @@ def main():
 
     reloadFiles=False
     collectFiles=False
-    badMonths=[(12,17),(6,12),(11,1)]
+    badMonths=[(12,17),(6,12),(1,11)]
     #add list of poorly nehaving files, to include 2012-06
 
     if reloadFiles: # know whether this is head node or all executors -> make into broadcast variable.
         files=[]
         file_prefix='file:////l2/corpora/reddit/submissions/RS_20'
         file_suffix='.bz2'
-        for y in range(12,13):
-            for m in range(1,3):
+        for y in range(12,18):
+            for m in range(1,13):
                 if (m,y) in badMonths:
                     continue
                     
@@ -49,7 +47,7 @@ def main():
         # filter
         print('\n\n\n starting read and filter')
         filtered = filterPosts(files,sc,spark,subs=set(sub_list)) # also saves filtered posts by month
-        filtered.write.parquet('filtered_all.parquet', mode='overwrite')
+        #filtered.write.parquet('filtered_all.parquet', mode='overwrite')
 
     elif collectFiles: 
         file_prefix='filtered_'
@@ -57,7 +55,7 @@ def main():
         firstFile=True
 
         for y in range(12,18):
-            for m in range(1,3):
+            for m in range(1,13):
                 if (m,y) in badMonths:
                     continue
                 filename=file_prefix + str(y) + "-{0:0=2d}".format(m) +file_suffix
